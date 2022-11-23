@@ -12,12 +12,16 @@ make build
 
 # Run
 ```
-./chain-exporter -config config.example.yaml -chain-name eth-mainnet -rpc-url https://rpc.ankr.com/eth
+./chain-exporter 
+  -config config.example.yaml
+  -chain-name eth-mainnet
+  -rpc-url https://rpc.ankr.com/eth
 ```
 
 # run with docker
 ```
-docker run -v `pwd`/config.example.yaml:/app/config.yaml shidaxi/chain-exporter -chain-name eth-mainnet -rpc-url https://rpc.ankr.com/eth
+docker run -v `pwd`/config.example.yaml:/app/config.yaml shidaxi/chain-exporter:latest \
+   -chain-name eth-mainnet -rpc-url https://rpc.ankr.com/eth
 ```
 
 # Get Metrics
