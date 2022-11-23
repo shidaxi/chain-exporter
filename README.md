@@ -15,6 +15,11 @@ make build
 ./chain-exporter -config config.example.yaml -chain-name eth-mainnet -rpc-url https://rpc.ankr.com/eth
 ```
 
+# run with docker
+```
+docker run -v `pwd`/config.example.yaml:/app/config.yaml chain-exporter -chain-name eth-mainnet -rpc-url https://rpc.ankr.com/eth
+```
+
 # Get Metrics
 
 ```
