@@ -20,7 +20,8 @@ make build
 
 # run with docker
 ```
-docker run -v `pwd`/config.example.yaml:/app/config.yaml shidaxi/chain-exporter:latest \
+docker run -p 9060:9060 -v `pwd`/config.example.yaml:/app/config.yaml \
+  shidaxi/chain-exporter:latest \
   -config config.example.yaml \
   -chain-name eth-mainnet \
   -rpc-url https://rpc.ankr.com/eth 
