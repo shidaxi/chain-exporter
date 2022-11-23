@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "go: build chain-exporter (debug)",
+            "type": "shell",
+            "command": "go",
+            "args": [
+                "build",
+                "-gcflags=all=-N -l",
+                "-o",
+                "/tmp/bin/chain-exporter",
+                "."
+            ],
+            "options": {
+                "env": {
+                }
+            },
+        },
+    ]
+}

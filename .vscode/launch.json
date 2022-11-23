@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug chain-exporter",
+            "type": "go",
+            "request": "launch",
+            "preLaunchTask": "go: build chain-exporter (debug)",
+            "mode": "exec",
+            "program": "/tmp/bin/chain-exporter",
+            "args": [],
+            "env": { 
+              "GETH": "https://rpc.ankr.com/eth_goerli",
+            }
+        },
+    ]
+}

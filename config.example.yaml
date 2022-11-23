@@ -1,0 +1,31 @@
+scrapeIntervalSeconds: 30
+balance:
+  hardhat0: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+  hardhat1: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+erc20balance:
+  usdt:
+    contractAddress: 0xdac17f958d2ee523a2206206994597c13d831ec7
+    accounts:
+      hardhat0: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+      hardhat1: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+  shib:
+    contractAddress: 0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE
+    accounts:
+      hardhat0: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+      hardhat1: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+contractCall:
+  hardhat0UsdtBalance:
+    contractName: UsdtERC20Token
+    contractAddress: 0xdac17f958d2ee523a2206206994597c13d831ec7
+    scrapeIntervalSeconds: 30
+    outputDecimals: 18
+    abiDefination: '[{ "type": "function", "name": "balanceOf", "inputs": [{ "name": "", "type": "address" }] }]'
+    args:
+    - 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+  usdtTotalSupply:
+    contractName: UsdtERC20Token
+    contractAddress: 0xdac17f958d2ee523a2206206994597c13d831ec7
+    scrapeIntervalSeconds: 30
+    outputDecimals: 6
+    abiDefination: '[{ "type": "function", "name": "totalSupply", "inputs": [] }]'
+    args: []
