@@ -247,8 +247,8 @@ func main() {
 				s := hexutil.Encode(res)
 				n := new(big.Int)
 				n.SetString(s[len(s)-64:], 16)
-				n = n.Div(n, math.BigPow(10, int64(callConfig.OutputDecimals)))
-				m.contractData.WithLabelValues(*chainName, *rpcUrl, callConfig.ContractName, callConfig.ContractAddress, methodName, strings.Join(callConfig.Args, "_")).Set(float64(n.Int64()))
+				f, _ := new(big.Float).SetInt(n.Div(n, math.BigPow(10, int64(callConfig.OutputDecimals)))).Float64()
+				m.contractData.WithLabelValues(*chainName, *rpcUrl, callConfig.ContractName, callConfig.ContractAddress, methodName, strings.Join(callConfig.Args, "_")).Set(f)
 				time.Sleep(time.Duration(callConfig.ScrapeIntervalSeconds) * time.Second)
 			}
 		}()
