@@ -59,6 +59,7 @@ type fetchConfig struct {
 
 type metrics struct {
 	balance      *prometheus.GaugeVec
+	nounce       *prometheus.GaugeVec
 	erc20balance *prometheus.GaugeVec
 	contractData *prometheus.GaugeVec
 }
@@ -75,6 +76,14 @@ func GetEthBalance(address string) *big.Float {
 		fmt.Printf("Error fetching ETH Balance for address: %v\n", address)
 	}
 	return ToEther(balance)
+}
+
+func GetAccountNounce(address string) uint64 {
+	nounce, err := eth.NonceAt(context.Background(), common.HexToAddress(address), nil)
+	if err != nil {
+		fmt.Printf("Error fetching ETH Balance for address: %v\n", address)
+	}
+	return nounce
 }
 
 func CurrentBlock() uint64 {
@@ -111,6 +120,10 @@ func NewMetrics(reg prometheus.Registerer) *metrics {
 			Name: "chain_accountbalance",
 			Help: "",
 		}, []string{"chainName", "rpcUrl", "accountName", "accountAddress"}),
+		nounce: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "chain_account_nounce",
+			Help: "",
+		}, []string{"chainName", "rpcUrl", "accountName", "accountAddress"}),
 		erc20balance: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "chain_erc20balance",
 			Help: "",
@@ -121,6 +134,7 @@ func NewMetrics(reg prometheus.Registerer) *metrics {
 		}, []string{"chainName", "rpcUrl", "contractName", "contractAddress", "methodDef", "args"}),
 	}
 	reg.MustRegister(m.balance)
+	reg.MustRegister(m.nounce)
 	reg.MustRegister(m.erc20balance)
 	reg.MustRegister(m.contractData)
 	return m
@@ -150,9 +164,12 @@ func main() {
 	for k, v := range config.Balance {
 		go func(accountName string, accountAddress string) {
 			for {
-				log.Printf("Scrapting balance of account %s\n", accountName)
 				b, _ := GetEthBalance(accountAddress).Float64()
+				n := float64(GetAccountNounce(accountAddress))
+				log.Printf("Scrapting balance of account %s: %f\n", accountName, b)
+				log.Printf("Scrapting nounce of account %s: %f\n", accountName, n)
 				m.balance.WithLabelValues(*chainName, *rpcUrl, accountName, accountAddress).Set(b)
+				m.nounce.WithLabelValues(*chainName, *rpcUrl, accountName, accountAddress).Set(n)
 				time.Sleep(time.Duration(config.ScrapeIntervalSeconds) * time.Second)
 			}
 		}(k, v)
