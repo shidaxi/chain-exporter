@@ -55,13 +55,18 @@ type fetchConfig struct {
 		OutputDecimals        int16    `yaml:"outputDecimals"`
 		Args                  []string `yaml:"args"`
 	} `yaml:"contractCall"`
+	StandardRpcEndpoint     string            `yaml:"standardRpcEndpoint"`
+	ReplicaRpcEndpoints     map[string]string `yaml:"replicaRpcEndpoints"`
+	HashCheckBackwardOffset uint64            `yaml:"hashCheckBackwardOffset"`
 }
 
 type metrics struct {
-	balance      *prometheus.GaugeVec
-	nounce       *prometheus.GaugeVec
-	erc20balance *prometheus.GaugeVec
-	contractData *prometheus.GaugeVec
+	balance             *prometheus.GaugeVec
+	nounce              *prometheus.GaugeVec
+	erc20balance        *prometheus.GaugeVec
+	contractData        *prometheus.GaugeVec
+	blockHashEigenValue *prometheus.GaugeVec
+	stateRootEigenValue *prometheus.GaugeVec
 }
 
 func ConnectionToGeth(url string) error {
@@ -132,21 +137,32 @@ func NewMetrics(reg prometheus.Registerer) *metrics {
 			Name: "chain_contractdata",
 			Help: "",
 		}, []string{"chainName", "rpcUrl", "contractName", "contractAddress", "methodDef", "args"}),
+		blockHashEigenValue: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "chain_blockhash_eigenvalue",
+			Help: "",
+		}, []string{"chainName", "rpcUrl"}),
+		stateRootEigenValue: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "chain_stateroot_eigenvalue",
+			Help: "",
+		}, []string{"chainName", "rpcUrl"}),
 	}
 	reg.MustRegister(m.balance)
 	reg.MustRegister(m.nounce)
 	reg.MustRegister(m.erc20balance)
 	reg.MustRegister(m.contractData)
+	reg.MustRegister(m.blockHashEigenValue)
+	reg.MustRegister(m.stateRootEigenValue)
 	return m
 }
 
 func main() {
 	flag.Parse()
 	config = config.getConf()
+	fmt.Println(config)
 
 	err := ConnectionToGeth(*rpcUrl)
 	if err != nil {
-		panic(err)
+		log.Printf(err.Error())
 	}
 
 	// Create a new registry.
@@ -203,7 +219,7 @@ func main() {
 		callConfig := v
 		abiObj, err := abi.JSON(strings.NewReader(callConfig.AbiDefination))
 		if err != nil {
-			panic(err)
+			log.Printf(err.Error())
 		}
 		var args []interface{}
 		var methodName string
@@ -250,7 +266,7 @@ func main() {
 		}
 		callData, err := abiObj.Pack(methodName, args...)
 		if err != nil {
-			panic(err)
+			log.Printf(err.Error())
 		}
 		contractAddress := common.HexToAddress(callConfig.ContractAddress)
 		callMsg := ethereum.CallMsg{To: &contractAddress, Data: callData}
@@ -267,6 +283,33 @@ func main() {
 				f, _ := new(big.Float).SetInt(n.Div(n, math.BigPow(10, int64(callConfig.OutputDecimals)))).Float64()
 				m.contractData.WithLabelValues(*chainName, *rpcUrl, callConfig.ContractName, callConfig.ContractAddress, methodName, strings.Join(callConfig.Args, "_")).Set(f)
 				time.Sleep(time.Duration(callConfig.ScrapeIntervalSeconds) * time.Second)
+			}
+		}()
+	}
+
+	if config.StandardRpcEndpoint != "" && len(config.ReplicaRpcEndpoints) > 0 {
+		go func() {
+			for {
+				eth, err = ethclient.Dial(config.StandardRpcEndpoint)
+				blockNumber, err := eth.BlockNumber(context.Background())
+				if err != nil {
+					panic(err)
+				}
+				for _, rpcUrl := range config.ReplicaRpcEndpoints {
+					blk, err := eth.BlockByNumber(context.Background(), big.NewInt(int64(blockNumber)))
+					if err != nil {
+						panic(err)
+					}
+					blockNumberX := blockNumber % 100
+					blockHash := blk.Hash().String()
+					blockHashX, _ := hexutil.DecodeUint64("0x" + blockHash[len(blockHash)-1:])
+					m.blockHashEigenValue.WithLabelValues(*chainName, rpcUrl).Set(float64(blockNumberX + blockHashX))
+					stateRootHash := blk.Root().String()
+					stateRootHashX, _ := hexutil.DecodeUint64("0x" + stateRootHash[len(stateRootHash)-1:])
+					m.stateRootEigenValue.WithLabelValues(*chainName, rpcUrl).Set(float64(blockNumberX + stateRootHashX))
+					log.Println(blockNumber, blockHash, stateRootHash)
+				}
+				time.Sleep(time.Duration(config.ScrapeIntervalSeconds) * time.Second)
 			}
 		}()
 	}

@@ -1,4 +1,8 @@
 scrapeIntervalSeconds: 30
+standardRpcEndpoint: http://127.0.0.1:15545
+replicaRpcEndpoints:
+  verifier1cseq: http://127.0.0.1:15545
+  verifier2cseq: http://127.0.0.1:16545
 balance:
   hardhat0: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
   hardhat1: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
