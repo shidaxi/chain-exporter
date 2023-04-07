@@ -296,6 +296,7 @@ func main() {
 					panic(err)
 				}
 				for _, rpcUrl := range config.ReplicaRpcEndpoints {
+					eth, err = ethclient.Dial(rpcUrl)
 					blk, err := eth.BlockByNumber(context.Background(), big.NewInt(int64(blockNumber)))
 					if err != nil {
 						panic(err)
