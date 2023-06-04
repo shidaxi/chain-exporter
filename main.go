@@ -201,7 +201,7 @@ func main() {
 					callData, err := abiObj.Pack("balanceOf", common.HexToAddress(accountAddress))
 					callMsg := ethereum.CallMsg{To: &erc20Address, Data: callData}
 					if err != nil {
-						panic(err)
+						log.(err)
 					}
 					res, err := eth.CallContract(context.Background(), callMsg, nil)
 					n := new(big.Int)
@@ -255,7 +255,7 @@ func main() {
 				} else if typeString == "bool" {
 					r, err := strconv.ParseBool(inputArg)
 					if err != nil {
-						log.Fatalln(err)
+						log.Println(err)
 					}
 					args = append(args, r)
 				} else {
@@ -275,7 +275,7 @@ func main() {
 				log.Printf("Scrapting contract data: %s: %s %s\n", callName, callConfig.ContractName, callConfig.ContractAddress)
 				res, err := eth.CallContract(context.Background(), callMsg, nil)
 				if err != nil {
-					panic(err)
+					log.Println(err)
 				}
 				s := hexutil.Encode(res)
 				n := new(big.Int)
@@ -293,13 +293,13 @@ func main() {
 				eth, err = ethclient.Dial(config.StandardRpcEndpoint)
 				blockNumber, err := eth.BlockNumber(context.Background())
 				if err != nil {
-					panic(err)
+					log.Println(err)
 				}
 				for _, rpcUrl := range config.ReplicaRpcEndpoints {
 					eth, err = ethclient.Dial(rpcUrl)
 					blk, err := eth.BlockByNumber(context.Background(), big.NewInt(int64(blockNumber)))
 					if err != nil {
-						panic(err)
+						log.Println(err)
 					}
 					blockNumberX := blockNumber % 100
 					blockHash := blk.Hash().String()
