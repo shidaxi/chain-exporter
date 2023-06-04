@@ -3,7 +3,7 @@ builds:
     binary: chain-exporter
     ldflags: -s -w -X app/config.Version.REVISION={{.Commit}}
     goos:
-      - windows
+      # - windows
       - darwin
       - linux
     goarch:

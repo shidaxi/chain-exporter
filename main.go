@@ -162,7 +162,7 @@ func main() {
 
 	err := ConnectionToGeth(*rpcUrl)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Println(err.Error())
 	}
 
 	// Create a new registry.
@@ -201,9 +201,9 @@ func main() {
 					callData, err := abiObj.Pack("balanceOf", common.HexToAddress(accountAddress))
 					callMsg := ethereum.CallMsg{To: &erc20Address, Data: callData}
 					if err != nil {
-						log.(err)
+						log.Println(err.Error())
 					}
-					res, err := eth.CallContract(context.Background(), callMsg, nil)
+					res, _ := eth.CallContract(context.Background(), callMsg, nil)
 					n := new(big.Int)
 					n.SetString(strings.ReplaceAll(hexutil.Encode(res), "0x", ""), 16)
 					balance, _ := ToEther(n).Float64()
@@ -219,7 +219,7 @@ func main() {
 		callConfig := v
 		abiObj, err := abi.JSON(strings.NewReader(callConfig.AbiDefination))
 		if err != nil {
-			log.Printf(err.Error())
+			log.Println(err.Error())
 		}
 		var args []interface{}
 		var methodName string
@@ -266,7 +266,7 @@ func main() {
 		}
 		callData, err := abiObj.Pack(methodName, args...)
 		if err != nil {
-			log.Printf(err.Error())
+			log.Println(err.Error())
 		}
 		contractAddress := common.HexToAddress(callConfig.ContractAddress)
 		callMsg := ethereum.CallMsg{To: &contractAddress, Data: callData}
@@ -275,7 +275,7 @@ func main() {
 				log.Printf("Scrapting contract data: %s: %s %s\n", callName, callConfig.ContractName, callConfig.ContractAddress)
 				res, err := eth.CallContract(context.Background(), callMsg, nil)
 				if err != nil {
-					log.Println(err)
+					log.Println(err.Error())
 				}
 				s := hexutil.Encode(res)
 				n := new(big.Int)
@@ -293,13 +293,13 @@ func main() {
 				eth, err = ethclient.Dial(config.StandardRpcEndpoint)
 				blockNumber, err := eth.BlockNumber(context.Background())
 				if err != nil {
-					log.Println(err)
+					log.Println(err.Error())
 				}
 				for _, rpcUrl := range config.ReplicaRpcEndpoints {
 					eth, err = ethclient.Dial(rpcUrl)
 					blk, err := eth.BlockByNumber(context.Background(), big.NewInt(int64(blockNumber)))
 					if err != nil {
-						log.Println(err)
+						log.Println(err.Error())
 					}
 					blockNumberX := blockNumber % 100
 					blockHash := blk.Hash().String()
