@@ -291,15 +291,28 @@ func main() {
 		go func() {
 			for {
 				eth, err = ethclient.Dial(config.StandardRpcEndpoint)
+				if err != nil {
+					log.Println(err.Error())
+					time.Sleep(time.Duration(3) * time.Second)
+					continue
+				}
+
 				blockNumber, err := eth.BlockNumber(context.Background())
 				if err != nil {
 					log.Println(err.Error())
+					continue
 				}
+
 				for _, rpcUrl := range config.ReplicaRpcEndpoints {
 					eth, err = ethclient.Dial(rpcUrl)
+					if err != nil {
+						log.Println(err.Error())
+						continue
+					}
 					blk, err := eth.BlockByNumber(context.Background(), big.NewInt(int64(blockNumber)))
 					if err != nil {
 						log.Println(err.Error())
+						continue
 					}
 					blockNumberX := blockNumber % 100
 					blockHash := blk.Hash().String()
