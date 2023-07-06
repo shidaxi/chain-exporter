@@ -272,17 +272,20 @@ func main() {
 		callMsg := ethereum.CallMsg{To: &contractAddress, Data: callData}
 		go func() {
 			for {
+				time.Sleep(time.Duration(callConfig.ScrapeIntervalSeconds) * time.Second)
 				log.Printf("Scrapting contract data: %s: %s %s\n", callName, callConfig.ContractName, callConfig.ContractAddress)
 				res, err := eth.CallContract(context.Background(), callMsg, nil)
 				if err != nil {
 					log.Println(err.Error())
 				}
 				s := hexutil.Encode(res)
+				if(len(s) < 64) {
+					log.Println("Result hex string length less than 64 when calling" + callName)
+				}
 				n := new(big.Int)
 				n.SetString(s[len(s)-64:], 16)
 				f, _ := new(big.Float).SetInt(n.Div(n, math.BigPow(10, int64(callConfig.OutputDecimals)))).Float64()
 				m.contractData.WithLabelValues(*chainName, *rpcUrl, callConfig.ContractName, callConfig.ContractAddress, methodName, strings.Join(callConfig.Args, "_")).Set(f)
-				time.Sleep(time.Duration(callConfig.ScrapeIntervalSeconds) * time.Second)
 			}
 		}()
 	}
